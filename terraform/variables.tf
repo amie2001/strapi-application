@@ -15,7 +15,7 @@ variable "image_tag" {
 variable "ecr_repository" {
   description = "The ECR repository URL for the Strapi Docker image"
   type        = string
-  default     = "864899875002.dkr.ecr.ap-south-1.amazonaws.com/strapi-app-task4"
+  default     = "864899875002.dkr.ecr.ap-south-1.amazonaws.com/strapi-app-pavi"
 }
 
 # EC2 Instance type
