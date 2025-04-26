@@ -23,6 +23,8 @@ The first part of the process involves the Continuous Integration (CI) pipeline.
 
 1. **GitHub Actions Workflow**:
    - The workflow runs the Docker build process and then pushes the image to AWS ECR or Docker Hub, depending on your configuration.
+  
+    
      ![ci](https://github.com/user-attachments/assets/a73aa7cf-fde6-4217-8241-9264748353de)
 
 
@@ -34,11 +36,12 @@ Once the Docker image is pushed to the container registry (Docker Hub or ECR), t
 
 1. **GitHub Actions for Terraform Workflow**:
    - The CD pipeline is manually triggered. This step runs `terraform init`, `terraform plan`, and `terraform apply` to deploy the Docker container to the EC2 instance.
-   - **Screenshot**:  
+  
+   
        ![cd](https://github.com/user-attachments/assets/af550677-93f4-490a-ba72-3a9eb68ed1ec)
 
 
-     _This screenshot shows the GitHub Actions CD pipeline running successfully, deploying the Docker image using Terraform._
+    
 
 ### Docker Image Push to ECR
 
@@ -46,10 +49,12 @@ After the Docker image is successfully built, it is pushed to AWS ECR (or Docker
 
 1. **Docker Image Push to ECR**:
    - The image is pushed to AWS ECR for storage and future use during deployment.
-   - **Screenshot**:  
+
+
+   
      ![ecr](https://github.com/user-attachments/assets/de498313-9705-4dc3-ab09-ff111f13dc7e)
  
-     _This screenshot shows the Docker image being successfully pushed to AWS ECR._
+     
 
 ### Docker Container Running
 
@@ -60,10 +65,11 @@ To ensure the image is running correctly in the EC2 instance, we use the `docker
 
 2. **Docker Image Listing**:
    - The `docker images` command is used to show all the available Docker images on the EC2 instance.
-   - **Screenshot**:  
+
+
      ![docker ps](https://github.com/user-attachments/assets/592f27e4-6ac7-4287-9514-2de30ec62166)
   
-     _This screenshot shows the Strapi Docker image listed on the EC2 instance._
+     
 
 ### Strapi Application Running on EC2
 
@@ -71,10 +77,12 @@ Once the Docker container is deployed, the Strapi application can be accessed vi
 
 1. **Strapi Application Running**:
    - After deploying the container, the Strapi application can be accessed by visiting the public IP of the EC2 instance in a web browser.
-   - **Screenshot**:  
+
+     
      ![strapi deployed successfully](https://github.com/user-attachments/assets/d264ea8f-56c7-4b9b-ab77-8a992754e478)
 
-     _This screenshot shows the Strapi application running successfully on EC2._
+
+     
 
 ## Conclusion
 
