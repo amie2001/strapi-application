@@ -1,59 +1,82 @@
-# Strapi Project Setup
+# Strapi Deployment with GitHub Actions + Terraform
 
-## Task Overview
-This project demonstrates the setup of a Strapi application using the recommended approach. The goal is to set up Strapi locally, explore its folder structure, create a sample content type, and push the setup to GitHub.
+This project automates the deployment of a Strapi application using GitHub Actions for CI/CD and Terraform for infrastructure management. The process includes building a Docker image, pushing it to AWS ECR, and deploying it on an EC2 instance.
 
-## Steps Taken
+## Project Overview
 
-### 1. Setup Strapi Project Locally
-To quickly get a Strapi project running, I used the following command to create and start the project:
+This project automates the following:
 
+1. **CI Pipeline (GitHub Actions)**:
+   - On pushing code to the `main` branch, the pipeline builds the Docker image of the Strapi application and pushes it to AWS ECR.
+   
+2. **CD Pipeline (Terraform)**:
+   - The CD pipeline is triggered manually to deploy the Docker image onto the EC2 instance using Terraform.
 
-npx create-strapi-app my-strapi-app --quickstart
+3. **Deployment Verification**:
+   - After the Strapi application is deployed to EC2, it is verified by accessing the public IP address of the EC2 instance.
 
+## Step-by-Step Workflow
 
-This command:
-- Creates a new Strapi project named `my-strapi-app`.
-- Installs the necessary dependencies.
-- Starts the Strapi application in development mode with the admin panel running on `http://localhost:1337`.
+### CI Pipeline
 
-### 2. Explore Folder Structure
-After the project was created, I explored the folder structure to understand the components of the application:
+The first part of the process involves the Continuous Integration (CI) pipeline. This is triggered when changes are pushed to the `main` branch of the repository.
 
-- `api/`: Contains the models and controllers for content types.
-- `config/`: Contains configuration files for the application.
-- `node_modules/`: Standard node modules directory where dependencies are installed.
-- `public/`: The public directory for serving static files.
-- `package.json`: Contains the metadata and dependencies for the Strapi application.
-
-### 3. Create a Sample Content Type
-I used the Strapi admin panel to create a sample content type. The steps were as follows:
-1. Opened the admin panel at `http://localhost:1337/admin`.
-2. Logged in using the provided credentials.
-3. Created a new content type named "Article" with the following fields:
-   - Title (Text)
-   - Content (Rich Text)
-
-This content type is now available to be managed via the Strapi admin panel.
-
-### 4. Push to GitHub
-Once the setup was completed and tested locally, I initialized a Git repository, added all files, and pushed the setup to GitHub.
+1. **GitHub Actions Workflow**:
+   - The workflow runs the Docker build process and then pushes the image to AWS ECR or Docker Hub, depending on your configuration.
+     ![ci](https://github.com/user-attachments/assets/a73aa7cf-fde6-4217-8241-9264748353de)
 
 
-git init
-git add .
-git commit -m "Initial commit: Strapi project setup"
-git remote add origin <https://github.com/PearlThoughts-DevOps-Internship/strapi--Monitor-hub.git>
-git push -u origin master
+     
 
-### 5. screenshot of strapi admin panel
-![image](https://github.com/user-attachments/assets/86b93177-ffc2-4590-beff-3988ab27b6f0)
+### CD Pipeline
 
-### 6. lemo video
-https://drive.google.com/file/d/1MzNzAbXuU9L7j_RFUzWSNZlBMSDSTpRq/view?usp=sharing
+Once the Docker image is pushed to the container registry (Docker Hub or ECR), the Continuous Deployment (CD) pipeline is triggered. The CD pipeline deploys the image to the EC2 instance using Terraform.
 
-### 7. Documenting the Process
-I have documented the steps I followed in this README file for reference.
+1. **GitHub Actions for Terraform Workflow**:
+   - The CD pipeline is manually triggered. This step runs `terraform init`, `terraform plan`, and `terraform apply` to deploy the Docker container to the EC2 instance.
+   - **Screenshot**:  
+       ![cd](https://github.com/user-attachments/assets/af550677-93f4-490a-ba72-3a9eb68ed1ec)
+
+
+     _This screenshot shows the GitHub Actions CD pipeline running successfully, deploying the Docker image using Terraform._
+
+### Docker Image Push to ECR
+
+After the Docker image is successfully built, it is pushed to AWS ECR (or Docker Hub).
+
+1. **Docker Image Push to ECR**:
+   - The image is pushed to AWS ECR for storage and future use during deployment.
+   - **Screenshot**:  
+     ![ecr](https://github.com/user-attachments/assets/de498313-9705-4dc3-ab09-ff111f13dc7e)
+ 
+     _This screenshot shows the Docker image being successfully pushed to AWS ECR._
+
+### Docker Container Running
+
+To ensure the image is running correctly in the EC2 instance, we use the `docker ps` command to list the running Docker containers.
+
+1. **Running Docker Container**:
+   - The `docker ps` command is executed to verify that the container is up and running on the EC2 instance.
+
+2. **Docker Image Listing**:
+   - The `docker images` command is used to show all the available Docker images on the EC2 instance.
+   - **Screenshot**:  
+     ![docker ps](https://github.com/user-attachments/assets/592f27e4-6ac7-4287-9514-2de30ec62166)
+  
+     _This screenshot shows the Strapi Docker image listed on the EC2 instance._
+
+### Strapi Application Running on EC2
+
+Once the Docker container is deployed, the Strapi application can be accessed via the EC2 instance’s public IP address.
+
+1. **Strapi Application Running**:
+   - After deploying the container, the Strapi application can be accessed by visiting the public IP of the EC2 instance in a web browser.
+   - **Screenshot**:  
+     ![strapi deployed successfully](https://github.com/user-attachments/assets/d264ea8f-56c7-4b9b-ab77-8a992754e478)
+
+     _This screenshot shows the Strapi application running successfully on EC2._
 
 ## Conclusion
-This task involved setting up Strapi locally, exploring its structure, creating a sample content type, and pushing the setup to GitHub. The process was simple using the `npx create-strapi-app` command and the Strapi admin panel.
+
+This project successfully automates the deployment of a Strapi application using GitHub Actions for CI/CD and Terraform for infrastructure management. With Docker, AWS ECR, and EC2, the application is built, pushed, and deployed seamlessly. This setup ensures efficient and continuous deployment with minimal manual intervention.
+
