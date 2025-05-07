@@ -1,10 +1,9 @@
 name: CD - Deploy to EC2
 
 on:
-  workflow_run:
-    workflows: ["CI - Build & Push Docker Image"]
-    types:
-      - completed
+  push:
+    branches:
+      - main  # Trigger this on every push to main (after the CI workflow)
 
 jobs:
   deploy:
@@ -21,14 +20,17 @@ jobs:
 
     - name: Deploy Docker container to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -T -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          echo "APP_KEYS: ${{ secrets.STRAPI_APP_KEYS }}"
+          echo "API_TOKEN_SALT: ${{ secrets.STRAPI_API_TOKEN_SALT }}"
+          
           # Pull the latest image from Docker Hub
           docker pull ${{ secrets.DOCKER_USERNAME }}/strapi-app:latest
-
+          
           # Stop and remove the old container (if it exists)
           docker stop strapi || true
           docker rm strapi || true
-
+          
           # Run the new container with the necessary environment variables
           docker run -d -p 80:1337 --name strapi \
             -e APP_KEYS="${{ secrets.STRAPI_APP_KEYS }}" \
