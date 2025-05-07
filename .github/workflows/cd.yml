@@ -1,9 +1,9 @@
-name: CD Pipeline for Docker Image Deployment to EC2
+name: CD Pipeline for Docker Deployment via SSM
 
 on:
   push:
     branches:
-      - main
+      - main  
 
 jobs:
   deploy:
@@ -11,29 +11,33 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Set up AWS CLI
-      uses: aws-actions/configure-aws-credentials@v1
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1
 
-    - name: Deploy Docker Container on EC2
+    - name: Deploy to EC2 via SSM
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << EOF
-          docker pull pavi2244/strapi-app:latest
-
-          docker rm -f strapi-app || true
-
-          docker run -d --name strapi-app -p 80:1337 \
-            -e HOST=0.0.0.0 \
-            -e PORT=1337 \
-            -e APP_KEYS="toBeModified1,toBeModified2" \
-            -e API_TOKEN_SALT="tobemodified" \
-            -e ADMIN_JWT_SECRET="tobemodified" \
-            -e TRANSFER_TOKEN_SALT="tobemodified" \
-            -e JWT_SECRET="tobemodified" \
-            pavi2244/strapi-app:latest
-        EOF
+        aws ssm send-command \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy Strapi container" \
+          --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+          --parameters 'commands=[
+            "docker pull pavi2244/strapi-app:latest",
+            "docker stop strapi-app || true && docker rm strapi-app || true",
+            "docker run -d --name strapi-app -p 80:1337 \
+              -e HOST=0.0.0.0 \
+              -e PORT=1337 \
+              -e APP_KEYS=\"toBeModified1,toBeModified2\" \
+              -e API_TOKEN_SALT=tobemodified \
+              -e ADMIN_JWT_SECRET=tobemodified \
+              -e TRANSFER_TOKEN_SALT=tobemodified \
+              -e JWT_SECRET=tobemodified \
+              pavi2244/strapi-app:latest"
+          ]' \
+          --timeout-seconds 600 \
+          --output text
