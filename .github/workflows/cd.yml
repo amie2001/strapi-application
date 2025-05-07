@@ -20,7 +20,7 @@ jobs:
 
     - name: Deploy Docker container to EC2
       run: |
-        ssh -T -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -v -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           echo "APP_KEYS: ${{ secrets.STRAPI_APP_KEYS }}"
           echo "API_TOKEN_SALT: ${{ secrets.STRAPI_API_TOKEN_SALT }}"
           
