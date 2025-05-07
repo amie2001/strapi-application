@@ -1,0 +1,40 @@
+name: CD - Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: ["CI - Build & Push Docker Image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+    - name: Deploy Docker container to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          # Pull the latest image from Docker Hub
+          docker pull ${{ secrets.DOCKER_USERNAME }}/strapi-app:latest
+
+          # Stop and remove the old container (if it exists)
+          docker stop strapi || true
+          docker rm strapi || true
+
+          # Run the new container with the necessary environment variables
+          docker run -d -p 80:1337 --name strapi \
+            -e APP_KEYS="${{ secrets.STRAPI_APP_KEYS }}" \
+            -e API_TOKEN_SALT="${{ secrets.STRAPI_API_TOKEN_SALT }}" \
+            -e ADMIN_JWT_SECRET="${{ secrets.STRAPI_ADMIN_JWT_SECRET }}" \
+            -e TRANSFER_TOKEN_SALT="${{ secrets.STRAPI_TRANSFER_TOKEN_SALT }}" \
+            -e JWT_SECRET="${{ secrets.STRAPI_JWT_SECRET }}" \
+            ${{ secrets.DOCKER_USERNAME }}/strapi-app:latest
+        EOF
