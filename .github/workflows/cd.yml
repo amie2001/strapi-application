@@ -1,42 +1,40 @@
-name: CD - Deploy to EC2
+name: CD Pipeline for Docker Image Deployment to EC2
 
 on:
-  push:
-    branches:
-      - main  # Trigger this on every push to main (after the CI workflow)
+  workflow_run:
+    workflows: ["CI Pipeline for Docker Image Build and Push"]
+    types:
+      - completed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
 
-    - name: Deploy Docker container to EC2
+    - name: Deploy Docker Container on EC2
       run: |
-        ssh -v -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          echo "APP_KEYS: ${{ secrets.STRAPI_APP_KEYS }}"
-          echo "API_TOKEN_SALT: ${{ secrets.STRAPI_API_TOKEN_SALT }}"
-          
-          # Pull the latest image from Docker Hub
-          docker pull ${{ secrets.DOCKER_USERNAME }}/strapi-app:latest
-          
-          # Stop and remove the old container (if it exists)
-          docker stop strapi || true
-          docker rm strapi || true
-          
-          # Run the new container with the necessary environment variables
-          docker run -d -p 80:1337 --name strapi \
-            -e APP_KEYS="${{ secrets.STRAPI_APP_KEYS }}" \
-            -e API_TOKEN_SALT="${{ secrets.STRAPI_API_TOKEN_SALT }}" \
-            -e ADMIN_JWT_SECRET="${{ secrets.STRAPI_ADMIN_JWT_SECRET }}" \
-            -e TRANSFER_TOKEN_SALT="${{ secrets.STRAPI_TRANSFER_TOKEN_SALT }}" \
-            -e JWT_SECRET="${{ secrets.STRAPI_JWT_SECRET }}" \
-            ${{ secrets.DOCKER_USERNAME }}/strapi-app:latest
+        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << EOF
+          docker pull pavi2244/strapi-app:latest
+
+          docker rm -f strapi-app || true
+
+          docker run -d --name strapi-app -p 80:1337 \
+            -e HOST=0.0.0.0 \
+            -e PORT=1337 \
+            -e APP_KEYS="toBeModified1,toBeModified2" \
+            -e API_TOKEN_SALT="tobemodified" \
+            -e ADMIN_JWT_SECRET="tobemodified" \
+            -e TRANSFER_TOKEN_SALT="tobemodified" \
+            -e JWT_SECRET="tobemodified" \
+            pavi2244/strapi-app:latest
         EOF
